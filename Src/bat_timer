@@ -1,0 +1,152 @@
+/****************************************************************************
+* Title                    :   Battery Pack MCU
+* File name                :   bat_timer.c
+* Author name[ID]          :   Abhinav Choudhary
+* Origin Date(DD/MM/YYYY)  :   14/11/2019 
+* Version                  :   2.0.0
+* Compiler                 :   Keil IDE
+* Hardware                 :   Refer to documentation
+* Target                   :   STM32F446 Nucleo
+* Notes                    :   CAN Bus network design
+* Copy-Rights
+*/
+
+
+/**
+ *  @file  bat_timer.c
+ *  @brief 
+ */
+
+/*******************************************************************************
+*Includes
+*******************************************************************************/
+#include "bat_timer.h"
+
+/*******************************************************************************
+*Module Preprocessor Constants
+*******************************************************************************/
+
+
+/*******************************************************************************
+*Module Preprocessor Macros
+*******************************************************************************/
+
+
+/*******************************************************************************
+*Module Typedefs
+*******************************************************************************/
+
+
+/*******************************************************************************
+*Module Variable Definitions
+*******************************************************************************/
+TIM_HandleTypeDef htim3;
+
+/*******************************************************************************
+*Function Definitions
+*******************************************************************************/
+extern void Error_Handler(void);
+
+
+/**
+  * @brief Initialize TIMER peripheral
+    This function configures and initializes the TIMER 3 peripheral
+  * @param None
+  * @retval None
+  */
+void Timer_Init(void)
+{
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 48000;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period =333;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;  //dont change to TIM_TRGO_RESET
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  
+  if (HAL_TIM_Base_Start_IT(&htim3)!= HAL_OK)
+  {
+    Error_Handler();
+  }
+  
+
+}
+
+
+/**
+  * @brief  Timer MSP Initialization
+  * This function configures hardware resources for TIMER Peripheral 
+  * @param  htimer : Timer handle structure
+  * @retval None  
+  */
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htimer)
+{
+    if(htimer->Instance==TIM3)
+  {
+    __HAL_RCC_TIM3_CLK_ENABLE();
+    /* TIM3 interrupt Init */
+    HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(TIM3_IRQn);
+  }
+}
+
+/**
+  * @brief  Timer MSP Deinitialization
+  * This function configures hardware resources for TIMER Peripheral 
+  * @param  htimer : Timer handle structure
+  * @retval None  
+  */
+void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
+{
+  if(htim_base->Instance==TIM3)
+  {
+    /* Peripheral clock disable */
+    __HAL_RCC_TIM3_CLK_DISABLE();
+
+    /* TIM3 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(TIM3_IRQn);
+  }
+}
+
+/**
+  * @brief  Timer 3 Interrupt Handler
+  * This function handles Timer 3 interrupt
+  * @param  none
+  * @retval None  
+  */
+void TIM3_IRQHandler(void)
+{
+  HAL_TIM_IRQHandler(&htim3);
+}
+
+/**
+  * @brief TIM3 ISR
+    This function has ISR for TIM4
+  * @param phtim: pointer to timer handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *phtim)
+{
+  /** @TODO: Add ISR */
+
+}
+
+
+/*****************************END OF FILE**************************************/
