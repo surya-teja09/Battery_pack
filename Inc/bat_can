@@ -1,0 +1,81 @@
+/****************************************************************************
+* Title                    :   Battery Pack MCU
+* File name                :   bat_can.h
+* Author name[ID]          :   Abhinav Choudhary
+* Origin Date(DD/MM/YYYY)  :   14/11/2019 
+* Version                  :   2.0.0
+* Compiler                 :   Keil IDE
+* Hardware                 :   CAN Transceiver: SN65HVD233
+* Target                   :   STM32F446 Nucleo
+* Notes                    :   CAN Bus network design
+* Copy-Rights
+*/
+ 
+/**@file  bat_can.h
+  *@brief <Start briefing about the module>
+  */ 
+ 
+/******** Define to prevent recursive inclusion*****************************/
+#ifndef _BAT_CAN_H
+#define _BAT_CAN_H
+
+#ifdef _cplusplus
+extern “C” {
+#endif
+ 
+/*******************************************************************************
+*Includes
+*******************************************************************************/
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_can.h"
+#include "stm32f4xx_hal_gpio.h"
+
+#include "bat_timer.h" 
+ 
+/*******************************************************************************
+*Preprocessor constants
+*******************************************************************************/
+ 
+ 
+/*******************************************************************************
+*Configuration Constants
+*******************************************************************************/
+ 
+ 
+/*******************************************************************************
+*Macros
+*******************************************************************************/
+ 
+ 
+/*******************************************************************************
+*Typedefs
+*******************************************************************************/
+ 
+ 
+/*******************************************************************************
+*Variables
+*******************************************************************************/
+ 
+ 
+/*******************************************************************************
+*Function prototypes
+*******************************************************************************/
+extern void HAL_CAN_MspInit (CAN_HandleTypeDef* hcan1);
+extern void HAL_CAN_MspDeInit (CAN_HandleTypeDef* hcan1);
+extern void CAN1_Init (void);
+extern void CAN1_DeInit (void);
+extern void CAN1_Filter_Config (void);
+extern void CAN1_MsgTx (uint8_t *pTxMsg);
+extern void CAN1_MsgRx (void);
+extern int32_t Read_Gauge_Param(void); //cross reference from bat_gauge
+extern void SEND_CAN_BaseId (uint32_t ID);
+ 
+
+ 
+#ifdef _cplusplus
+}
+#endif
+ 
+#endif 
+
+/*****************************END OF FILE**************************************/
