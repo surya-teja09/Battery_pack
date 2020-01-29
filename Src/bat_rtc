@@ -1,0 +1,125 @@
+/****************************************************************************
+* Title                    :   Battery Pack MCU
+* File name                :   bat_rtc.c
+* Author name[ID]          :   Abhinav Choudhary
+* Origin Date(DD/MM/YYYY)  :   18/11/2019 
+* Version                  :   2.0.0
+* Compiler                 :   Keil IDE
+* Hardware                 :   Refer to documentation
+* Target                   :   STM32F446 Nucleo
+* Notes                    :   
+* Copy-Rights
+*/
+
+/**
+ *  @file  bat_rtc.c
+ *  @brief Application code for RTC
+ */
+
+/*******************************************************************************
+*Includes
+*******************************************************************************/
+#include "bat_rtc.h"
+
+/*******************************************************************************
+*Module Preprocessor Constants
+*******************************************************************************/
+
+
+/*******************************************************************************
+*Module Preprocessor Macros
+*******************************************************************************/
+
+
+/*******************************************************************************
+*Module Typedefs
+*******************************************************************************/
+
+
+/*******************************************************************************
+*Module Variable Definitions
+*******************************************************************************/
+RTC_HandleTypeDef hrtc;
+
+/*******************************************************************************
+*Function Definitions
+*******************************************************************************/
+extern void Error_Handler(void);
+extern void send_RTC_CalibrationRTR (void);
+
+/**
+  * @brief  RTC Initialization
+  * This function configures RTC structures and initializes the peripheral
+  * @param  htimer : Timer handle structure
+  * @retval None  
+  */
+void RTC_Init(void)
+{
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
+
+  /** Initialize RTC Only 
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Initialize RTC and set the Time and Date 
+  */
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x0;
+  sTime.Seconds = 0x0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 0x1;
+  sDate.Year = 0x0;
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief  Timer MSP Initialization
+  * This function configures hardware resources for RTC Peripheral 
+  * @param  hrtc : RTC handle structure
+  * @retval None  
+  */
+void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
+{
+  if(hrtc->Instance==RTC)
+  {
+    /* Peripheral clock enable */
+    __HAL_RCC_RTC_ENABLE();
+  }
+}
+
+/**
+  * @brief  RTC Calibration from conversion kit
+  * This function sends RTR to conversion kit MCU to get latest time
+  * @param  None
+  * @retval None  
+  */
+void Calibrate_RTC(void)
+{
+  send_RTC_CalibrationRTR ();
+}
+
+
+
+/*****************************END OF FILE**************************************/
